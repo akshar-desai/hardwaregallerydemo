@@ -1,5 +1,3 @@
-
-
 gsap.registerPlugin(CustomEase, SplitText);
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -24,8 +22,17 @@ document.addEventListener("DOMContentLoaded", () => {
   const chars = splitPreloaderHeader.chars;
   const lines = splitPreloaderCopy.lines;
   const headerLines = splitHeader.lines;
+
+  // CHANGED: the two letters that stay are now "H" (first char)
+  // and "G" (first letter of the second word), instead of H and Y.
   const initialChar = chars[0];
-  const lastChar = chars[chars.length - 1];
+
+  let keepIndex = chars.findIndex(
+    (char, i) => i > 0 && char.textContent.trim().toUpperCase() === "G"
+  );
+  if (keepIndex === -1) keepIndex = chars.length - 1; // safety fallback
+
+  const secondChar = chars[keepIndex];
 
   chars.forEach((char, index) => {
     gsap.set(char, { yPercent: index % 2 === 0 ? -100 : 100 });
@@ -123,8 +130,9 @@ document.addEventListener("DOMContentLoaded", () => {
   tl.to(
     chars,
     {
+      // CHANGED: every char leaves except the first (H) and the "G"
       yPercent: (index) => {
-        if (index === 0 || index === chars.length - 1) {
+        if (index === 0 || index === keepIndex) {
           return 0;
         }
         return index % 2 === 0 ? 100 : -100;
@@ -135,7 +143,7 @@ document.addEventListener("DOMContentLoaded", () => {
       delay: 0.5,
       onStart: () => {
         const initialCharMask = initialChar.parentElement;
-        const lastCharMask = lastChar.parentElement;
+        const secondCharMask = secondChar.parentElement;
 
         if (
           initialCharMask &&
@@ -144,24 +152,28 @@ document.addEventListener("DOMContentLoaded", () => {
           initialCharMask.style.overflow = "visible";
         }
 
-        if (lastCharMask && lastCharMask.classList.contains("char-mask")) {
-          lastCharMask.style.overflow = "visible";
+        if (secondCharMask && secondCharMask.classList.contains("char-mask")) {
+          secondCharMask.style.overflow = "visible";
         }
 
-        const viewportWidth = window.innerWidth;
-        const centerX = viewportWidth / 2;
+        // CHANGED: measure against the real visible width (no scrollbar)
+        // and measure at the moment the move starts, so it also works
+        // when the layout is different on mobile.
+        const centerX = document.documentElement.clientWidth / 2;
         const initialCharRect = initialChar.getBoundingClientRect();
-        const lastCharRect = lastChar.getBoundingClientRect();
+        const secondCharRect = secondChar.getBoundingClientRect();
 
-        gsap.to([initialChar, lastChar], {
+        gsap.to([initialChar, secondChar], {
           duration: 1,
           ease: "hop",
           delay: 0.5,
           x: (i) => {
             if (i === 0) {
+              // H: its right edge lands on the center line
               return centerX - initialCharRect.left - initialCharRect.width;
             } else {
-              return centerX - lastCharRect.left;
+              // G: its left edge lands on the center line
+              return centerX - secondCharRect.left;
             }
           },
           onComplete: () => {

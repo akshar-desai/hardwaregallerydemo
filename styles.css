@@ -45,6 +45,8 @@ a {
   font-weight: 600;
   line-height: 0.9;
   display: block;
+  /* CHANGED: never let the title wrap onto a second line */
+  white-space: nowrap;
 }
 
 .preloader {
@@ -160,8 +162,8 @@ a {
 
   .preloader-images {
     top: 35%;
-    width: 10rem;
-    height: 10rem;
+    width: 15rem;
+    height: 15rem;
   }
 
   .preloader-copy {
@@ -173,6 +175,8 @@ a {
   }
 
   .preloader-header a {
-    font-size: 4rem;
+    /* CHANGED: scales with the screen width so
+       "HARDWARE GALLERY" always fits on one line */
+    font-size: 11vw;
   }
 }
